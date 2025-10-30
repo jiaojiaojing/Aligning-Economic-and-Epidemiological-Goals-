@@ -369,6 +369,26 @@ p2 <- ggplot(summary_table,
   )
 
 # Panel C (no legend): Harvest-window infection burden
+
+harvest_table <- bind_rows(lapply(names(dif_results), function(dif_val) {
+  res <- dif_results[[dif_val]]
+  tibble(
+    dif = as.numeric(dif_val),
+    scenario = factor(
+      c("Baseline", "Disease Control", "Harvest Control"),
+      levels = c("Baseline", "Disease Control", "Harvest Control")
+    ),
+    harvest_IH = c(
+      calculate_harvest_infections(res$baseline$IH_timeseries, years = YEARS,
+                                   hs = harvest_start, hd = harvest_duration),
+      calculate_harvest_infections(res$disease_control$IH_timeseries, years = YEARS,
+                                   hs = harvest_start, hd = harvest_duration),
+      calculate_harvest_infections(res$harvest_control$IH_timeseries, years = YEARS,
+                                   hs = harvest_start, hd = harvest_duration)
+    )
+  )
+}))
+
 p3 <- ggplot(harvest_table,
              aes(x = dif, y = harvest_IH,
                  color = scenario, linetype = scenario)) +
@@ -421,3 +441,4 @@ outfile <- sprintf("1year_disease_shift_r=%.3f_Omega=%g_%s.png",
 ggsave(outfile, comb_shift, width = 12, height = 13, dpi = 300)
 
 cat("\nSaved plot:", outfile, "\n")
+
